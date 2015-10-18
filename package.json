@@ -1,0 +1,31 @@
+{
+  "name": "traffic",
+  "version": "1.0.0",
+  "description": "A nodejs semaphore implementation.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jasmine spec/semaphore_spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SebastianOsuna/traffic.git"
+  },
+  "keywords": [
+    "nodejs",
+    "semaphore",
+    "concurrency"
+  ],
+  "author": "Sebastian Osuna <jsebastianosuna@hotmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SebastianOsuna/traffic/issues"
+  },
+  "homepage": "https://github.com/SebastianOsuna/traffic#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "jasmine": "^2.3.2"
+  }
+}
