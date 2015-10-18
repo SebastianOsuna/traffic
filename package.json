@@ -1,5 +1,5 @@
 {
-  "name": "traffic",
+  "name": "node-traffic",
   "version": "1.0.0",
   "description": "A nodejs semaphore implementation.",
   "main": "index.js",

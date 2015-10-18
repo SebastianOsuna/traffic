@@ -1,10 +1,10 @@
-# traffic
+# Traffic
 A node.js semaphore implementation.
 
 ## Usage
 
 ```javascript
-var traffic = require('traffic');
+var traffic = require('node-traffic');
 
 traffic.enter(function criticalZone () {
 // ...
