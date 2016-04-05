@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jasmine spec/semaphore_spec.js"
+    "test": "jasmine spec/*_spec.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,9 @@
     "url": "https://github.com/SebastianOsuna/traffic/issues"
   },
   "homepage": "https://github.com/SebastianOsuna/traffic#readme",
-  "dependencies": {},
+  "dependencies": {
+    "node-zookeeper-client": "^0.2.2"
+  },
   "devDependencies": {
     "jasmine": "^2.3.2"
   }
