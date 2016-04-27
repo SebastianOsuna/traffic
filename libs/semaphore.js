@@ -1,25 +1,34 @@
-var EventEmitter = require('events').EventEmitter,
-    semaphoreQueue = new EventEmitter(),
-    semaphoreLookup = {},
-    DEFAULT_NAMESPACE = '_';
+var EventEmitter = require('events').EventEmitter;
+var semaphoreQueue = new EventEmitter();
+var semaphoreLookup = {};
+var DEFAULT_NAMESPACE = '_';
 
-module.exports.enter = function (namespace, fn) {
-  if (fn == null && "function" == typeof namespace) {
+module.exports.enter = function (_namespace, _fn) {
+  var namespace = _namespace;
+  var fn = _fn;
+
+  if (!fn && typeof namespace === 'function') {
     fn = namespace;
     namespace = DEFAULT_NAMESPACE;
   }
 
-  if(semaphoreLookup[namespace]) {
+  if (semaphoreLookup[namespace]) {
     return semaphoreQueue.once(namespace, this.enter.bind(this, namespace, fn));
-  } else {
-    semaphoreLookup[namespace] = true;
   }
+
+  semaphoreLookup[namespace] = true;
   fn();
   return this;
 };
 
-module.exports.leave = function (namespace) {
-  namespace = namespace || DEFAULT_NAMESPACE;
+module.exports.leave = function (_namespace) {
+  var namespace = _namespace || DEFAULT_NAMESPACE;
   delete semaphoreLookup[namespace];
   semaphoreQueue.emit(namespace);
 };
+
+module.exports.currentStatus = function () {
+  return 'OK';
+};
+
+module.exports.mode = 'local';
