@@ -57,8 +57,7 @@ Traffic allows to have a distributed semaphore across multiples nodes using Zook
 var config = {
   zkHost: 'localhost:2181', // host:port
   zkRoot: '/', // znode path
-  zkTimeout: 4000, // 4 seconds
-  connectionRetries: 0
+  zkTimeout: 4000 // 4 seconds
 };
 var traffic = require('node-traffic').distributed(config);
 traffic.on('connectionTimeout', function (err) {

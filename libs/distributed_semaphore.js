@@ -13,16 +13,33 @@ var Semaphore = function (config) {
   self.config = config;
   self.emiter = new EventEmitter();
   self.semaphoreQueue = new EventEmitter();
-  self.zkClient = zk.createClient(config.zkHost);
+  self.zkClient = zk.createClient(config.zkHost, { sessionTimeout: 10000 });
 
   self.tryToConnect();
 };
 
+function initRoot() {
+  var self = this;
+
+  // Create root znode
+  self.zkClient.mkdirp(self.config.zkRoot, function (err) {
+    if (err && err.code !== zk.Exception.NODE_EXISTS) {
+      throw new Error(ERR_ZNODE + err.message);
+    }
+    self.ready = true;
+    self.semaphoreQueue.emit('#_ready_#');
+  });
+}
+
 function handleStates() {
   var self = this;
+  
   self.zkClient.on('disconnected', function () {
-    // Retry to connect
-    self.tryToConnect();
+    self.ready = false;
+  });
+
+  self.zkClient.on('connected', function () {
+    initRoot.call(self);
   });
 }
 
@@ -47,18 +64,10 @@ Semaphore.prototype.tryToConnect = function () {
 
     // Clear timeout
     clearTimeout(connectionTimeout);
-
-    // Create root znode
-    self.zkClient.mkdirp(self.config.zkRoot, function (err2) {
-      if (err2 && err2.code !== zk.Exception.NODE_EXISTS) {
-        throw new Error(ERR_ZNODE + err2.message);
-      }
-      self.ready = true;
-      self.semaphoreQueue.emit('#_ready_#');
-    });
+    initRoot.call(self);
+    handleStates.call(self);
   });
   self.zkClient.connect();
-  handleStates.call(self);
 };
 
 Semaphore.prototype.on = function (event, fn) {
@@ -84,15 +93,20 @@ Semaphore.prototype.enter = function (_namespace, _fn) {
   }
 
   // Try to acquire the lock of the namespace.
-  self.zkClient.create(self.config.zkRoot + '/' + namespace, function (err) {
-    if (!err) {
-      fn();
-    } else if (err.code === zk.Exception.NODE_EXISTS) {
-      return self.semaphoreQueue.once(namespace, self.enter.bind(self, namespace, fn));
-    }
+  // Created znode is ephemeral in case connection is lost while in the critical zone.
+  self.zkClient.create(
+    self.config.zkRoot + '/' + namespace,
+    zk.CreateMode.EPHEMERAL,
+    function (err) {
+      if (!err) {
+        return fn();
+      } else if (err.code === zk.Exception.NODE_EXISTS) {
+        return self.semaphoreQueue.once(namespace, self.enter.bind(self, namespace, fn));
+      }
 
-    throw new Error('Error locking ' + namespace + ': ' + err.message);
-  });
+      throw new Error('Error locking ' + namespace + ': ' + err.message);
+    }
+  );
 
   return self;
 };
@@ -125,6 +139,5 @@ module.exports = function (_config) {
   config.zkHost = config.zkHost || 'localhost:2181';
   config.zkRoot = config.zkRoot || '';
   config.timeout = config.timeout || 4000;
-  config.connectionRetries = config.connectionRetries || 0;
   return new Semaphore(config);
 };
