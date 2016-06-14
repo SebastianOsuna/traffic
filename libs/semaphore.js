@@ -21,6 +21,10 @@ module.exports.enter = function (_namespace, _fn) {
   return this;
 };
 
+module.exports.setMaxListeners = function (n) {
+  semaphoreQueue.setMaxListeners(n);
+};
+
 module.exports.leave = function (_namespace) {
   var namespace = _namespace || DEFAULT_NAMESPACE;
   delete semaphoreLookup[namespace];
